@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QR Code Scanner</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f4f9;
+            color: #333;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        h1 {
+            color: #4CAF50;
+            margin-bottom: 20px;
+        }
+
+        #video {
+            width: 100%;
+            max-width: 500px;
+            height: auto;
+            margin: 0 auto;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border: 5px solid #4CAF50;
+        }
+
+        #canvas {
+            display: none;
+        }
+
+        #result {
+            margin-top: 20px;
+            font-size: 20px;
+            font-weight: bold;
+            color: #4CAF50;
+            padding: 10px;
+            background-color: #fff;
+            border: 2px solid #4CAF50;
+            border-radius: 8px;
+            width: fit-content;
+            margin: 20px auto;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        footer {
+            margin-top: 50px;
+            font-size: 14px;
+            color: #777;
+        }
+
+        footer a {
+            color: #4CAF50;
+            text-decoration: none;
+        }
+
+        footer a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>QR Code Scanner</h1>
+
+    <video id="video" autoplay></video>
+    <canvas id="canvas"></canvas>
+    <div id="result">Scan a QR code to see the result here.</div>
+
+    <footer>
+        Powered by <a href="https://github.com/schmich/instascan" target="_blank">Instascan.js</a>
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/instascan/1.0.0/instascan.min.js"></script>
+    <script>
+        let video = document.getElementById('video');
+        let canvas = document.getElementById('canvas');
+        let resultDiv = document.getElementById('result');
+
+        navigator.mediaDevices.getUserMedia({ video: true })
+            .then(stream => {
+                video.srcObject = stream;
+                video.play();
+            })
+            .catch(error => {
+                console.error('Error accessing camera:', error);
+            });
+
+        let scanner = new Instascan.Scanner({
+            video: video,
+            scanPeriod: 5,
+            mirror: false,
+            refractoryPeriod: 0,
+        });
+
+        scanner.addListener('scan', (content) => {
+            resultDiv.textContent = `Scanned content: ${content}`;
+        });
+
+        scanner.start();
+    </script>
+
+</body>
+</html>
