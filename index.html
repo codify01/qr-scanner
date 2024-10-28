@@ -34,10 +34,6 @@
             border: 5px solid #4CAF50;
         }
 
-        #canvas {
-            display: none;
-        }
-
         #result {
             margin-top: 20px;
             font-size: 20px;
@@ -66,6 +62,11 @@
         footer a:hover {
             text-decoration: underline;
         }
+
+        #error-message {
+            color: red;
+            margin-top: 20px;
+        }
     </style>
 </head>
 <body>
@@ -73,8 +74,8 @@
     <h1>QR Code Scanner</h1>
 
     <video id="video" autoplay></video>
-    <canvas id="canvas"></canvas>
     <div id="result">Scan a QR code to see the result here.</div>
+    <div id="error-message"></div>
 
     <footer>
         Powered by <a href="https://github.com/schmich/instascan" target="_blank">Instascan.js</a>
@@ -83,30 +84,31 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/instascan/1.0.0/instascan.min.js"></script>
     <script>
         let video = document.getElementById('video');
-        let canvas = document.getElementById('canvas');
         let resultDiv = document.getElementById('result');
+        let errorMessageDiv = document.getElementById('error-message');
 
-        navigator.mediaDevices.getUserMedia({ video: true })
-            .then(stream => {
-                video.srcObject = stream;
-                video.play();
-            })
-            .catch(error => {
-                console.error('Error accessing camera:', error);
-            });
+        // Check for camera availability
+        Instascan.Camera.getCameras().then(function (cameras) {
+            if (cameras.length > 0) {
+                let scanner = new Instascan.Scanner({
+                    video: video,
+                    scanPeriod: 5,
+                    mirror: false
+                });
 
-        let scanner = new Instascan.Scanner({
-            video: video,
-            scanPeriod: 5,
-            mirror: false,
-            refractoryPeriod: 0,
+                // Start scanning the first available camera
+                scanner.start(cameras[0]);
+
+                // Handle scan result
+                scanner.addListener('scan', (content) => {
+                    resultDiv.textContent = `Scanned content: ${content}`;
+                });
+            } else {
+                errorMessageDiv.textContent = 'No cameras found. Please connect a camera and try again.';
+            }
+        }).catch(function (e) {
+            errorMessageDiv.textContent = `Error accessing camera: ${e}`;
         });
-
-        scanner.addListener('scan', (content) => {
-            resultDiv.textContent = `Scanned content: ${content}`;
-        });
-
-        scanner.start();
     </script>
 
 </body>
